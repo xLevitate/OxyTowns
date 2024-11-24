@@ -9,8 +9,10 @@ import com.oxywire.oxytowns.command.annotation.MustBeInTown;
 import com.oxywire.oxytowns.command.annotation.SendersTown;
 import com.oxywire.oxytowns.config.Messages;
 import com.oxywire.oxytowns.entities.impl.town.Town;
+import com.oxywire.oxytowns.utils.ItemHelper;
 import net.kyori.adventure.text.minimessage.tag.resolver.Formatter;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
 
 public final class DepositCommand {
@@ -24,19 +26,14 @@ public final class DepositCommand {
     @CommandMethod("town|t deposit <amount>")
     @CommandDescription("Deposit money into your town's bank")
     @MustBeInTown
-    public void onDeposit(final Player sender, final @SendersTown Town town, final @Argument("amount") @Range(min = "0.01") double amount) {
+    public void onDeposit(final Player sender, final @SendersTown Town town, final @Argument("amount") @Range(min = "1") int amount) {
         final Messages messages = Messages.get();
-        if (!this.plugin.getEconomy().has(sender, amount)) {
-            messages.getPlayer().getErrorCannotAffordDeposit().send(sender, Formatter.number("amount", amount));
-            return;
-        }
-
-        if (this.plugin.getEconomy().withdrawPlayer(sender, amount).transactionSuccess()) {
+        if (ItemHelper.removeItems(sender, Material.DIAMOND, amount)) {
             town.addWorth(amount);
             messages.getTown().getBank().getDepositSuccessful().send(town, Placeholder.unparsed("player", sender.getName()), Formatter.number("amount", amount));
             return;
         }
 
-        messages.getPlayer().getErrorCannotAffordDeposit().send(sender);
+        messages.getPlayer().getErrorCannotAffordDeposit().send(sender, Formatter.number("amount", amount));
     }
 }

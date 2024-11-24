@@ -11,6 +11,7 @@ import com.oxywire.oxytowns.config.Messages;
 import com.oxywire.oxytowns.entities.impl.BanEntry;
 import com.oxywire.oxytowns.entities.impl.TrustedEntry;
 import com.oxywire.oxytowns.entities.impl.plot.Plot;
+import com.oxywire.oxytowns.entities.model.CreatedDateHolder;
 import com.oxywire.oxytowns.entities.model.Named;
 import com.oxywire.oxytowns.entities.model.Organisation;
 import com.oxywire.oxytowns.entities.types.PlotType;
@@ -21,7 +22,6 @@ import com.oxywire.oxytowns.entities.types.settings.Setting;
 import com.oxywire.oxytowns.entities.types.settings.SpawnSetting;
 import com.oxywire.oxytowns.menu.town.VaultMenu;
 import com.oxywire.oxytowns.runnable.TaxSchedule;
-import com.oxywire.oxytowns.entities.model.CreatedDateHolder;
 import com.oxywire.oxytowns.utils.ChunkPosition;
 import com.oxywire.oxytowns.utils.Placeholdered;
 import lombok.Getter;
@@ -39,16 +39,7 @@ import org.bukkit.entity.Player;
 import org.jetbrains.annotations.NotNull;
 
 import java.time.ZoneId;
-import java.util.Date;
-import java.util.EnumMap;
-import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
@@ -57,27 +48,25 @@ import java.util.stream.Collectors;
 public final class Town implements CreatedDateHolder, Organisation<UUID>, ForwardingAudience, Placeholdered, Named {
 
     private final UUID townId;
+    @Getter
+    private final Set<TrustedEntry> trusted;
+    private final Map<Role, Set<Permission>> permissionSets;
+    private final Map<ChunkPosition, Plot> playerPlots;
+    private final Map<Upgrade, Integer> townUpgrades;
+    private final List<VaultMenu> vaults;
+    private final Set<BanEntry> bans;
+    private final Map<Setting, Boolean> townToggles;
+    @Getter
+    private final Date creationDate;
     @Setter
     private String name;
     private UUID owner;
     @Setter
     private Map<UUID, Role> members;
-    private final Set<TrustedEntry> trusted;
-    private final Map<Role, Set<Permission>> permissionSets;
-    // private final Set<ChunkPosition> claimedChunks;
-    private final Set<Location> outpostChunks;
-    private final Map<ChunkPosition, Plot> playerPlots;
     private Location spawnPosition;
     @Setter
-    private double bankValue;
-    private final Map<Upgrade, Integer> townUpgrades;
-    private final List<VaultMenu> vaults;
-    private final Set<BanEntry> bans;
+    private int bankValue; // Changed to int to store diamond count
     private SpawnSetting spawnSetting;
-    private final Map<Setting, Boolean> townToggles;
-    @Getter
-    private final Date creationDate;
-
     private transient Cache<UUID, UUID> invitedPlayers = CacheBuilder.newBuilder()
         .expireAfterWrite(5, TimeUnit.MINUTES)
         .build();
@@ -88,11 +77,9 @@ public final class Town implements CreatedDateHolder, Organisation<UUID>, Forwar
         this.owner = owner;
         this.members = new ConcurrentHashMap<>();
         this.permissionSets = OxyTownsPlugin.get().getOxyTownsApi().createDefault();
-        // this.claimedChunks = Sets.newConcurrentHashSet();
-        this.outpostChunks = Sets.newConcurrentHashSet();
         this.playerPlots = new ConcurrentHashMap<>();
         this.spawnPosition = null;
-        this.bankValue = 0.0d;
+        this.bankValue = 0;
         this.townUpgrades = Maps.newConcurrentMap();
         this.vaults = Lists.newArrayList(new VaultMenu(6, "Town Vault"));
         this.bans = Sets.newConcurrentHashSet();
@@ -138,11 +125,8 @@ public final class Town implements CreatedDateHolder, Organisation<UUID>, Forwar
      * Unclaims a chunk at a given position.
      *
      * @param chunkRegion the chunk to remove
-     * @param player      the player unclaiming the chunk
      */
-    public void unclaimChunk(final ChunkPosition chunkRegion, final Player player) {
-        this.outpostChunks.removeIf(it -> ChunkPosition.chunkPosition(it).equals(chunkRegion));
-
+    public void unclaimChunk(final ChunkPosition chunkRegion) {
         final Plot plot = this.playerPlots.remove(chunkRegion);
         if (plot == null) return;
 
@@ -151,16 +135,6 @@ public final class Town implements CreatedDateHolder, Organisation<UUID>, Forwar
         if (this.spawnPosition != null && chunkRegion.contains(this.spawnPosition)) {
             this.spawnPosition = null;
         }
-    }
-
-    /**
-     * Claim an outpost at the given location.
-     *
-     * @param location the location to claim
-     */
-    public void claimOutpost(final Location location) {
-        this.outpostChunks.add(location);
-        OxyTownsPlugin.get().getTownCache().getTownsMap().put(ChunkPosition.chunkPosition(location), this);
     }
 
     /**
@@ -174,41 +148,13 @@ public final class Town implements CreatedDateHolder, Organisation<UUID>, Forwar
     }
 
     /**
-     * Helper method to get all outpost and claimed chunks.
-     *
-     * @return set of all chunks
-     */
-    public ImmutableSet<ChunkPosition> getOutpostAndClaimedChunks() {
-        final Set<ChunkPosition> chunks = Sets.newHashSet();
-
-        chunks.addAll(this.playerPlots.keySet());
-        chunks.addAll(this.outpostChunks.stream().map(ChunkPosition::chunkPosition).collect(Collectors.toSet()));
-
-        return ImmutableSet.copyOf(chunks);
-    }
-
-    /**
      * Check if a town has claimed a chunk or not.
      *
      * @param chunkPosition the chunk to check
      * @return claimed or not
      */
     public boolean hasClaimed(final ChunkPosition chunkPosition) {
-        if (playerPlots.containsKey(chunkPosition)) {
-            return true;
-        }
-
-        for (Location location : this.outpostChunks) {
-            if (!location.isWorldLoaded()) {
-                continue; // TODO: ???
-            }
-
-            if (location.getBlockX() >> 4 == chunkPosition.getX() && location.getBlockZ() >> 4 == chunkPosition.getZ() && location.getWorld().getName().equals(chunkPosition.getWorld())) {
-                return true;
-            }
-        }
-
-        return false;
+        return playerPlots.containsKey(chunkPosition);
     }
 
     /**
@@ -222,7 +168,7 @@ public final class Town implements CreatedDateHolder, Organisation<UUID>, Forwar
     }
 
     public Plot getPlot(final ChunkPosition position) {
-        return this.playerPlots.computeIfAbsent(position, pos -> outpostChunks.stream().filter(pos::contains).findFirst().map(it -> new Plot(UUID.randomUUID(), PlotType.DEFAULT, pos, "")).orElse(null));
+        return this.playerPlots.get(position);
     }
 
     /**
@@ -650,10 +596,6 @@ public final class Town implements CreatedDateHolder, Organisation<UUID>, Forwar
         return this.trusted.stream().anyMatch(it -> it.getUser().equals(uuid));
     }
 
-    public Set<TrustedEntry> getTrusted() {
-        return this.trusted;
-    }
-
     @Override
     public boolean isMember(final UUID uuid) {
         return this.members.containsKey(uuid);
@@ -667,15 +609,15 @@ public final class Town implements CreatedDateHolder, Organisation<UUID>, Forwar
         this.spawnPosition = location;
     }
 
-    public boolean hasWorth(final Double toCheck) {
-        return this.bankValue >= toCheck;
+    public boolean hasWorth(final Integer diamonds) {
+        return this.bankValue >= diamonds;
     }
 
-    public Double getWorth() {
+    public Integer getWorth() {
         return this.bankValue;
     }
 
-    public void setWorth(final Double newWorth) {
+    public void setWorth(final Integer newWorth) {
         this.bankValue = newWorth;
     }
 
@@ -720,11 +662,12 @@ public final class Town implements CreatedDateHolder, Organisation<UUID>, Forwar
             Formatter.number("members-and-owner", members.size() + 1),
             Formatter.number("claims", playerPlots.keySet().size()),
             Formatter.number("maxclaims", getUpgradeValue(Upgrade.CLAIMS)),
-            Formatter.number("outposts", outpostChunks.size()),
-            Formatter.number("maxoutposts", getUpgradeValue(Upgrade.OUTPOSTS)),
             Formatter.date("age", creationDate.toInstant().atZone(ZoneId.systemDefault())),
-            Formatter.number("upkeep", Math.ceil(getOutpostAndClaimedChunks().size() * TaxSchedule.getTownTaxValue())),
-            Placeholder.parsed("member-names", members.keySet().stream().map(Bukkit::getOfflinePlayer).map(it -> (it.isOnline() ? "<green>" : "<gray>") + it.getName()).collect(Collectors.joining("<gray>, ")))
+            Formatter.number("upkeep", Math.ceil(getClaimedChunks().size() * TaxSchedule.getTownTaxValue())),
+            Placeholder.parsed("member-names", members.keySet().stream()
+                .map(Bukkit::getOfflinePlayer)
+                .map(it -> (it.isOnline() ? "<green>" : "<gray>") + it.getName())
+                .collect(Collectors.joining("<gray>, ")))
         };
     }
 }

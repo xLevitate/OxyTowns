@@ -6,24 +6,23 @@ import com.oxywire.oxytowns.entities.impl.town.Town;
 import com.oxywire.oxytowns.menu.town.VaultSelectorMenu;
 import com.oxywire.oxytowns.storage.TownStorageManager;
 import com.oxywire.oxytowns.utils.ChunkPosition;
+import lombok.Getter;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
-import java.util.Collection;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Optional;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 public final class TownCache {
 
     private final TownStorageManager townDao;
+    @Getter
     private final Set<Town> towns;
+    @Getter
     private final Map<ChunkPosition, Town> townsMap;
+    @Getter
     private final Set<UUID> bypass;
 
     public TownCache(final OxyTownsPlugin plugin) {
@@ -33,7 +32,7 @@ public final class TownCache {
         this.bypass = Sets.newConcurrentHashSet();
 
         for (Town town : this.towns) {
-            for (ChunkPosition position : town.getOutpostAndClaimedChunks()) {
+            for (ChunkPosition position : town.getClaimedChunks()) {
                 this.townsMap.put(position, town);
             }
         }
@@ -135,7 +134,7 @@ public final class TownCache {
      */
     public void createTown(final Town town) {
         this.towns.add(town);
-        this.townsMap.putAll(town.getOutpostAndClaimedChunks().stream().collect(Collectors.toMap(chunk -> chunk, chunk -> town)));
+        this.townsMap.putAll(town.getClaimedChunks().stream().collect(Collectors.toMap(chunk -> chunk, chunk -> town)));
     }
 
     /**
@@ -217,15 +216,4 @@ public final class TownCache {
         Bukkit.getScheduler().runTaskAsynchronously(OxyTownsPlugin.get(), () -> this.all().forEach(this::updateVaultLogic));
     }
 
-    public Set<UUID> getBypass() {
-        return this.bypass;
-    }
-
-    public Set<Town> getTowns() {
-        return towns;
-    }
-
-    public Map<ChunkPosition, Town> getTownsMap() {
-        return townsMap;
-    }
 }

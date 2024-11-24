@@ -12,7 +12,9 @@ import com.oxywire.oxytowns.entities.impl.town.Town;
 import com.oxywire.oxytowns.entities.types.perms.Permission;
 import net.kyori.adventure.text.minimessage.tag.resolver.Formatter;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
+import org.bukkit.Material;
 import org.bukkit.entity.Player;
+import org.bukkit.inventory.ItemStack;
 
 public final class WithdrawCommand {
 
@@ -25,7 +27,7 @@ public final class WithdrawCommand {
     @CommandMethod("town|t withdraw <amount>")
     @CommandDescription("Withdraw money from your town's bank")
     @MustBeInTown
-    public void onWithdraw(final Player sender, final @SendersTown Town town, final @Argument("amount") @Range(min = "0.01") double amount) {
+    public void onWithdraw(final Player sender, final @SendersTown Town town, final @Argument("amount") @Range(min = "1") int amount) {
         final Messages messages = Messages.get();
         if (!town.hasPermission(sender.getUniqueId(), Permission.WITHDRAW)) {
             messages.getTown().getBank().getErrorWithdrawNotAllowed().send(sender);
@@ -37,16 +39,20 @@ public final class WithdrawCommand {
             return;
         }
 
-        if (this.plugin.getEconomy().depositPlayer(sender, amount).transactionSuccess()) {
-            town.removeWorth(amount);
-            messages.getTown().getBank().getWithdrawSuccessful().send(
-                town,
-                Placeholder.unparsed("player", sender.getName()),
-                Formatter.number("amount", amount)
-            );
+        if (sender.getInventory().firstEmpty() == -1) {
+            messages.getTown().getBank().getInventoryFull().send(sender);
             return;
         }
 
-        messages.getPlayer().getErrorCannotAffordDeposit().send(sender);
+        sender.getInventory().addItem(new ItemStack(Material.DIAMOND, amount));
+
+        town.removeWorth(amount);
+        messages.getTown().getBank().getWithdrawSuccessful().send(
+            town,
+            Placeholder.unparsed("player", sender.getName()),
+            Formatter.number("amount", amount)
+        );
+
+        return;
     }
 }

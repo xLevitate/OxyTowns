@@ -2,6 +2,7 @@ package com.oxywire.oxytowns.config;
 
 import com.oxywire.oxytowns.OxyTownsPlugin;
 import com.oxywire.oxytowns.config.messaging.Message;
+import com.oxywire.oxytowns.economy.ItemEconomy;
 import com.oxywire.oxytowns.entities.types.PlotType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -12,12 +13,7 @@ import org.spongepowered.configurate.objectmapping.ConfigSerializable;
 import org.spongepowered.configurate.objectmapping.meta.Setting;
 
 import java.time.ZoneId;
-import java.util.EnumSet;
-import java.util.HashSet;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 @Getter
 @SuppressWarnings({"FieldMayBeFinal", "FieldCanBeLocal"})
@@ -25,10 +21,10 @@ import java.util.Set;
 public final class Config {
 
     @Setting
-    private double claimPrice = 150.0;
+    private ItemEconomy claimCost = new ItemEconomy(Material.DIAMOND, 5);
 
     @Setting
-    private double outpostPrice = 50_000.0;
+    private ItemEconomy upkeepCost = new ItemEconomy(Material.DIAMOND, 1);
 
     @Setting
     private int maxClaimRadius = 1;
@@ -45,10 +41,33 @@ public final class Config {
 
     @Setting
     private Map<com.oxywire.oxytowns.entities.types.Upgrade, Config.Upgrade> upgrades = new LinkedHashMap<>(Map.of(
-        com.oxywire.oxytowns.entities.types.Upgrade.CLAIMS, new Config.Upgrade("Claims", Map.of(15, 10_000.0, 20, 20_000.0, 50, 30_000.0, 100, 40_000.0, 200, 50_000.0, 350, 60_000.0, 500, 70_000.0)),
-        com.oxywire.oxytowns.entities.types.Upgrade.MEMBERS, new Config.Upgrade("Members", Map.of(10, 10_000.0, 25, 20_000.0, 50, 30_000.0, 75, 40_000.0, 100, 50_000.0, 150, 60_000.0, 250, 70_000.0)),
-        com.oxywire.oxytowns.entities.types.Upgrade.VAULT_AMOUNT, new Config.Upgrade("Vault Amount", Map.of(2, 10_000.0, 3, 20_000.0, 4, 30_000.0, 5, 40_000.0, 6, 50_000.0, 7, 60_000.0, 8, 70_000.0)),
-        com.oxywire.oxytowns.entities.types.Upgrade.OUTPOSTS, new Config.Upgrade("Outposts", Map.of(1, 10_000.0, 2, 20_000.0, 3, 30_000.0, 4, 40_000.0, 5, 50_000.0, 6, 60_000.0, 7, 70_000.0))
+        com.oxywire.oxytowns.entities.types.Upgrade.CLAIMS, new Config.Upgrade("Claims", Map.of(
+            15, new ItemEconomy(Material.DIAMOND, 10),
+            20, new ItemEconomy(Material.DIAMOND, 20),
+            50, new ItemEconomy(Material.DIAMOND, 30),
+            100, new ItemEconomy(Material.DIAMOND, 40),
+            200, new ItemEconomy(Material.DIAMOND, 50),
+            350, new ItemEconomy(Material.DIAMOND, 60),
+            500, new ItemEconomy(Material.DIAMOND, 70)
+        )),
+        com.oxywire.oxytowns.entities.types.Upgrade.MEMBERS, new Config.Upgrade("Members", Map.of(
+            10, new ItemEconomy(Material.DIAMOND, 10),
+            25, new ItemEconomy(Material.DIAMOND, 20),
+            50, new ItemEconomy(Material.DIAMOND, 30),
+            75, new ItemEconomy(Material.DIAMOND, 40),
+            100, new ItemEconomy(Material.DIAMOND, 50),
+            150, new ItemEconomy(Material.DIAMOND, 60),
+            250, new ItemEconomy(Material.DIAMOND, 70)
+        )),
+        com.oxywire.oxytowns.entities.types.Upgrade.VAULT_AMOUNT, new Config.Upgrade("Vault Amount", Map.of(
+            2, new ItemEconomy(Material.DIAMOND, 10),
+            3, new ItemEconomy(Material.DIAMOND, 20),
+            4, new ItemEconomy(Material.DIAMOND, 30),
+            5, new ItemEconomy(Material.DIAMOND, 40),
+            6, new ItemEconomy(Material.DIAMOND, 50),
+            7, new ItemEconomy(Material.DIAMOND, 60),
+            8, new ItemEconomy(Material.DIAMOND, 70)
+        ))
     ));
 
     @Setting
@@ -72,19 +91,17 @@ public final class Config {
     @Getter
     @ConfigSerializable
     public static final class Upkeep {
-
         @Setting
         private boolean enabled = true;
 
         @Setting
-        private double townValue = 25;
+        private ItemEconomy cost = new ItemEconomy(Material.DIAMOND, 1);
 
         @Setting
         private int hour = 12;
 
         @Setting
         private ZoneId timezone = ZoneId.of("America/New_York");
-
     }
 
     @Getter
@@ -92,7 +109,6 @@ public final class Config {
     @NoArgsConstructor
     @ConfigSerializable
     public static final class Plot {
-
         @Setting
         private Set<Material> blocks = EnumSet.noneOf(Material.class);
 
@@ -106,7 +122,6 @@ public final class Config {
     @Getter
     @ConfigSerializable
     public static final class TownChat {
-
         @Setting
         private boolean enabled = true;
 
@@ -123,6 +138,6 @@ public final class Config {
         private String displayName;
 
         @Setting
-        private Map<Integer, Double> upgrade;
+        private Map<Integer, ItemEconomy> upgrade;
     }
 }

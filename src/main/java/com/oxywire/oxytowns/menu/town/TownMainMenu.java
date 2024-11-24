@@ -32,7 +32,6 @@ public final class TownMainMenu extends Menu {
         Menu.set(contents, elements.get("residents"), e -> MembersMenu.open(player, this.town), this.placeholders);
         Menu.set(contents, elements.get("bank"), this.placeholders);
         Menu.set(contents, elements.get("info"), this.placeholders);
-        Menu.set(contents, elements.get("outposts"), e -> OutpostsMenu.open(player, this.town), this.placeholders);
 
         Menu.set(
             contents,

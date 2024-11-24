@@ -45,7 +45,7 @@ public final class ClaimCommand {
         }
 
         final List<String> blacklistedWorlds = config.getBlacklistedWorlds();
-        final double claimPrice = config.getClaimPrice();
+        final int claimPrice = config.getClaimCost().getAmount();
 
         if (blacklistedWorlds.contains(sender.getLocation().getWorld().getName())) {
             messages.getTown().getClaim().getErrorBlacklistedWorld().send(sender);
@@ -80,14 +80,14 @@ public final class ClaimCommand {
             return;
         }
 
-        int priceToClaim = (int) (claimPrice * chunksToClaim.size());
+        int priceToClaim = claimPrice * chunksToClaim.size();
 
         if (town.getBankValue() < priceToClaim) {
             messages.getTown().getClaim().getErrorCannotAffordClaim().send(sender);
             return;
         }
 
-        town.removeWorth((double) priceToClaim);
+        town.removeWorth(priceToClaim);
 
         chunksToClaim.forEach(chunkPosition -> {
             final Location location = Bukkit.getWorld(chunkPosition.getWorld()).getHighestBlockAt(chunkPosition.getX() << 4, chunkPosition.getZ() << 4).getLocation();

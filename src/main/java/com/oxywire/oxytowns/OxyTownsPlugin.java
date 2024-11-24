@@ -29,9 +29,7 @@ import com.oxywire.oxytowns.runnable.MobsRunnable;
 import com.oxywire.oxytowns.runnable.TaxSchedule;
 import lombok.Getter;
 import net.kyori.adventure.text.minimessage.tag.resolver.Placeholder;
-import net.milkbowl.vault.economy.Economy;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.RegisteredServiceProvider;
 import org.bukkit.plugin.ServicePriority;
 import org.bukkit.plugin.java.JavaPlugin;
 
@@ -41,13 +39,15 @@ import java.util.Optional;
 @Getter
 public class OxyTownsPlugin extends JavaPlugin {
 
-    private static OxyTownsPlugin instance;
     public static ConfigManager configManager;
-
+    private static OxyTownsPlugin instance;
     private TownCache townCache;
-    private Economy economy;
     private OxyTownsApi oxyTownsApi;
     private TaxSchedule taxSchedule;
+
+    public static OxyTownsPlugin get() {
+        return instance;
+    }
 
     @Override
     public void onEnable() {
@@ -67,15 +67,6 @@ public class OxyTownsPlugin extends JavaPlugin {
         }
 
         this.townCache = new TownCache(this);
-
-        final RegisteredServiceProvider<Economy> rsp = this.getServer().getServicesManager().getRegistration(Economy.class);
-        if (rsp == null) {
-            this.getLogger().info("This plugin requires an economy implementation alongside vault.");
-            this.getServer().getPluginManager().disablePlugin(this);
-            return;
-        }
-        this.economy = rsp.getProvider();
-
 
         this.oxyTownsApi = new OxyTownsApi();
         this.getServer().getServicesManager().register(OxyTownsApi.class, this.oxyTownsApi, this, ServicePriority.High);
@@ -162,10 +153,6 @@ public class OxyTownsPlugin extends JavaPlugin {
     @Override
     public void onDisable() {
         this.townCache.unloadTowns();
-    }
-
-    public static OxyTownsPlugin get() {
-        return instance;
     }
 
 }

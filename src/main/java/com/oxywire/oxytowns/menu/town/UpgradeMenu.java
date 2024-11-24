@@ -53,7 +53,7 @@ public final class UpgradeMenu extends Menu {
                             messages.getTown().getUpgrade().getUnlockedAlready().send(player, this.upgrade.getPlaceholders(upgradeTier));
                             return;
                         }
-                        if (this.town.getBankValue() < price) {
+                        if (this.town.getBankValue() < price.getAmount()) {
                             messages.getTown().getUpgrade().getCannotAfford().send(player, this.upgrade.getPlaceholders(upgradeTier));
                             return;
                         }
@@ -62,7 +62,7 @@ public final class UpgradeMenu extends Menu {
                             return;
                         }
 
-                        this.town.removeWorth(price);
+                        this.town.removeWorth(price.getAmount());
                         this.town.upgradeTown(upgrade, 1);
 
                         if (this.upgrade == Upgrade.VAULT_AMOUNT) {

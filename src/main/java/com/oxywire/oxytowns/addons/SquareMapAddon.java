@@ -100,7 +100,7 @@ public final class SquareMapAddon extends BukkitRunnable {
                 );
             }
 
-            for (final ChunkPosition claim : town.getOutpostAndClaimedChunks()) {
+            for (final ChunkPosition claim : town.getClaimedChunks()) {
                 if (Bukkit.getWorld(claim.getWorld()) == null) continue;
 
                 final Point point1 = Point.point(claim.getX() << 4, claim.getZ() << 4);
@@ -123,9 +123,8 @@ public final class SquareMapAddon extends BukkitRunnable {
             .replace("<owner>", Objects.requireNonNullElse(Bukkit.getOfflinePlayer(entity.getOwner()).getName(), "null"))
             .replace("<members>", Message.formatNumber(entity.getOwnerAndMembers().size()))
             .replace("<claims>", Message.formatNumber(entity.getClaimedChunks().size()))
-            .replace("<outposts>", Message.formatNumber(entity.getOutpostChunks().size()))
             .replace("<age>", entity.getCreationDate().toString())
-            .replace("<upkeep>", Message.formatCurrency(Config.get().getUpkeep().getTownValue() * entity.getClaimedChunks().size()))
+            .replace("<upkeep>", Message.formatCurrency(Config.get().getUpkeep().getCost().getAmount() * entity.getClaimedChunks().size()))
             .replace("<residents>", String.join(", ", entity.getOwnerAndMemberNames()));
     }
 }

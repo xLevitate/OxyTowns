@@ -26,8 +26,8 @@ public final class TaxSchedule {
         handleSchedule();
     }
 
-    public static double getTownTaxValue() {
-        return Config.get().getUpkeep().getTownValue();
+    public static int getTownTaxValue() {
+        return Config.get().getUpkeep().getCost().getAmount();
     }
 
     /**
@@ -43,7 +43,7 @@ public final class TaxSchedule {
         double totalTax = 0;
 
         for (Town town : this.plugin.getTownCache().all()) {
-            double taxToTake = config.getUpkeep().getTownValue() * town.getOutpostAndClaimedChunks().size();
+            double taxToTake = config.getUpkeep().getCost().getAmount() * town.getClaimedChunks().size();
             totalTax += taxToTake;
 
             if (taxToTake > 0 && taxToTake > town.getBankValue()) {

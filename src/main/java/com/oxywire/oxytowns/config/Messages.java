@@ -380,6 +380,10 @@ public final class Messages {
                 "<red><b>Error</b> <dark_gray>» <red>You are not allowed to withdraw money from your town bank.");
 
             @Setting
+            private Message inventoryFull = new Message().setMessage(
+                "<red><b>Error</b> <dark_gray>» <red>Your inventory is full.");
+
+            @Setting
             private Message depositSuccessful = new Message().setMessage(
                 "<gold><b>Info</b> <dark_gray>» <yellow><player> <gray>has deposited <yellow><amount><gray> into the town bank.");
 

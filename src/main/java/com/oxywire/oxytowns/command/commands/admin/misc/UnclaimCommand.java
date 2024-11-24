@@ -30,7 +30,7 @@ public final class UnclaimCommand {
             return;
         }
 
-        wantedTown.unclaimChunk(ChunkPosition.chunkPosition(sender.getLocation().getChunk()), sender);
+        wantedTown.unclaimChunk(ChunkPosition.chunkPosition(sender.getLocation().getChunk()));
         messages.getAdmin().getTown().getChunkUnclaimSuccess().send(sender, Placeholder.unparsed("town", wantedTown.getName()));
     }
 }

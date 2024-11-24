@@ -43,7 +43,7 @@ public final class RadiusClaimCommand {
             .filter(Objects::nonNull)
             .toList();
 
-        final double claimPrice = config.getClaimPrice();
+        final int claimPrice = config.getClaimCost().getAmount();
 
         if (blacklistedWorlds.contains(sender.getLocation().getWorld())) {
             messages.getTown().getClaim().getErrorBlacklistedWorld().send(sender);
@@ -91,7 +91,7 @@ public final class RadiusClaimCommand {
 
         final Set<ChunkPosition> chunksToClaim = TownUtils.getChunksAroundPlayer(sender, radius);
 
-        if (town.getUpgradeValue(Upgrade.CLAIMS) <= town.getClaimedChunks().size() + town.getOutpostChunks().size() + chunksToClaim.size()) {
+        if (town.getUpgradeValue(Upgrade.CLAIMS) <= town.getClaimedChunks().size() + chunksToClaim.size()) {
             messages.getTown().getClaim().getErrorUpgradeRequired().send(sender);
             return;
         }

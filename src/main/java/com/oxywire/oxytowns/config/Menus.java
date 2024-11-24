@@ -999,18 +999,6 @@ public final class Menus {
                                     "<white>Here you can unlock more vault space.",
                                     "<white>This will allow you to get more vaults."
                                 )
-                            ),
-                        "upgrade-" + Upgrade.OUTPOSTS, new MenuElement()
-                            .setMaterial(Material.ANVIL)
-                            .setSlot(25)
-                            .setDisplayName("<gold><b>Outposts")
-                            .setLore(
-                                List.of(
-                                    "<gray>Expand your town!",
-                                    "",
-                                    "<white>Here you can unlock more outposts.",
-                                    "<white>This will allow you to claim more outposts."
-                                )
                             )
                     )
                 )
@@ -1060,16 +1048,6 @@ public final class Menus {
                                 List.of(
                                     "",
                                     "<yellow>■ Click to upgrade amount of vaults."
-                                )
-                            ),
-                        "upgrade-info-" + Upgrade.OUTPOSTS, new MenuElement()
-                            .setMaterial(Material.DARK_OAK_DOOR)
-                            .setSlot(4)
-                            .setDisplayName("<gold>Outpost Upgrades")
-                            .setLore(
-                                List.of(
-                                    "",
-                                    "<yellow>■ Click to upgrade amount of outposts."
                                 )
                             ),
                         "upgrade-unlocked", new MenuElement()

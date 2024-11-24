@@ -18,10 +18,9 @@ public final class OxyTownsExpansion extends PlaceholderExpansion {
     private final TownCache townCache = OxyTownsPlugin.get().getTownCache();
     private final Map<String, Function<OfflinePlayer, String>> placeholderData = Map.of(
         "name", player -> townCache.getTownByPlayer(player.getUniqueId()).map(Town::getName).orElse("None"),
-        "balance", player -> String.valueOf(townCache.getTownByPlayer(player.getUniqueId()).map(Town::getBankValue).orElse(0.00)),
+        "balance", player -> String.valueOf(townCache.getTownByPlayer(player.getUniqueId()).map(Town::getBankValue).orElse(0)),
         "chunks", player -> String.valueOf(townCache.getTownByPlayer(player.getUniqueId()).map(town -> town.getClaimedChunks().size()).orElse(0)),
-        "outposts", player -> String.valueOf(townCache.getTownByPlayer(player.getUniqueId()).map(town -> town.getOutpostChunks().size()).orElse(0)),
-        "all_claims", player -> String.valueOf(townCache.getTownByPlayer(player.getUniqueId()).map(town -> town.getOutpostAndClaimedChunks().size()).orElse(0)),
+        "all_claims", player -> String.valueOf(townCache.getTownByPlayer(player.getUniqueId()).map(town -> town.getClaimedChunks().size()).orElse(0)),
         "owner", player -> townCache.getTownByPlayer(player.getUniqueId()).map(town -> Bukkit.getOfflinePlayer(town.getOwner()).getName()).orElse(""),
         "member_count", player -> String.valueOf(townCache.getTownByPlayer(player.getUniqueId()).map(town -> town.getOwnerAndMemberNames().size()).orElse(0)),
         "town_rank", player -> townCache.getTownByPlayer(player.getUniqueId()).map(town -> town.getOwnerAndMembersWithRoles().get(player.getUniqueId())).map(Message::formatEnum).orElse(""),

@@ -28,7 +28,6 @@ public final class StatsCommand {
             Formatter.number("towns", towns.size()),
             Formatter.number("members", towns.stream().mapToInt(it -> it.getMembers().size()).sum()),
             Formatter.number("chunks", towns.stream().mapToInt(it -> it.getClaimedChunks().size()).sum()),
-            Formatter.number("outposts", towns.stream().mapToInt(it -> it.getOutpostChunks().size()).sum()),
             Formatter.number("money", towns.stream().mapToDouble(Town::getBankValue).sum()),
             Formatter.number("plots", towns.stream().mapToInt(it -> it.getPlayerPlots().size()).sum())
         );
